@@ -2,24 +2,15 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import TypeAlias
 
 import utils
 
 
-def card_value(card: str) -> int:
+def card_value(card: str, joker: bool = False) -> int:
     if card.isdigit():
         return int(card)
-    return {"T": 10, "J": 11, "Q": 12, "K": 13, "A": 14}[card]
-
-
-def card_value_joker(card: str) -> int:
-    if card.isdigit():
-        return int(card)
-    return {"T": 10, "J": 0, "Q": 12, "K": 13, "A": 14}[card]
-
-
-def keys_by_value(d: dict, value: int) -> int:
-    return [k for k, v in d.items() if v == value]
+    return {"T": 10, "J": 0 if joker else 11, "Q": 12, "K": 13, "A": 14}[card]
 
 
 class HandType(IntEnum):
@@ -44,22 +35,23 @@ HAND_TYPES = {
 
 FiveTuple = tuple[int, int, int, int, int]
 
+
 @dataclass
 class Hand:
     raw_hand: str
     hand_type: HandType
-    hand_nums: FiveTuple
+    card_nums: FiveTuple
     bet: int
 
     def from_line_a(line: str) -> Hand:
         raw_hand, raw_bet = line.split()
         bet = int(raw_bet)
-        nums = [card_value(x) for x in raw_hand]
-        counter = Counter(nums)
+        card_nums = [card_value(x) for x in raw_hand]
+        counter = Counter(card_nums)
         freqs = tuple(sorted(list(counter.values()), reverse=True))
         return Hand(
             raw_hand=raw_hand,
-            hand_nums=nums,
+            card_nums=card_nums,
             hand_type=HAND_TYPES[freqs],
             bet=bet,
         )
@@ -67,8 +59,8 @@ class Hand:
     def from_line_b(line: str) -> Hand:
         raw_hand, raw_bet = line.split()
         bet = int(raw_bet)
-        nums = [card_value_joker(x) for x in raw_hand]
-        counter = Counter(nums)
+        card_nums = [card_value(x, joker=True) for x in raw_hand]
+        counter = Counter(card_nums)
         joker_count = counter.pop(0, 0)
         if joker_count:
             if not counter:
@@ -79,7 +71,7 @@ class Hand:
         freqs = tuple(sorted(list(counter.values()), reverse=True))
         return Hand(
             raw_hand=raw_hand,
-            hand_nums=nums,
+            card_nums=card_nums,
             hand_type=HAND_TYPES[freqs],
             bet=bet,
         )
@@ -87,7 +79,7 @@ class Hand:
     def __lt__(self, other: Hand) -> bool:
         if self.hand_type != other.hand_type:
             return self.hand_type < other.hand_type
-        return self.hand_nums < other.hand_nums
+        return self.card_nums < other.card_nums
 
     def __str__(self) -> str:
         return f"{self.raw_hand} {self.hand_type.name}"
