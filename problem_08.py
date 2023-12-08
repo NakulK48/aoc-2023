@@ -43,7 +43,7 @@ def part_b() -> int:
 
     currents: list[str] = [name for name in nodes if name.endswith("A")]
     steps = 0
-    z_intervals = [None] * 6
+    z_intervals = [None] * len(currents)
     for direction in itertools.cycle(directions):
         for idx, current in enumerate(currents):
             if current.endswith("Z") and z_intervals[idx] is None:
