@@ -97,11 +97,14 @@ def part_b():
     seen_positions: dict[tuple[Loc], int] = {}
     boulder_locs = sorted(get_boulder_locs(), key=lambda loc: loc[0])
 
-    for i in range(50):
+    # Loop starts at 2420 and has a period of 2310
+    # So 2420 -> 4730 -> ... -> 998_030
+    # 1_000_000 - 998030 = 1970
+    # 2420 + 1970 = 4390
+    for i in range(4390 + 1):
         if tuple(boulder_locs) in seen_positions:
             old_i = seen_positions[tuple(boulder_locs)]
             print(f"Seen before!, {i} and {old_i}")
-            # break
         seen_positions[tuple(boulder_locs)] = i
         # North
         for boulder_loc in boulder_locs:
@@ -144,11 +147,9 @@ def part_b():
         boulder_locs = get_boulder_locs()
         boulder_locs.sort(key=lambda loc: loc[0])
 
-    print(seen_positions.values())
-    final_boulder_locs = next(pos for pos, idx in seen_positions.items() if idx == 43)
     result = sum(
         (num_rows - row_index)
-        for row_index, _ in final_boulder_locs
+        for row_index, _ in boulder_locs
     )
     return result
 
